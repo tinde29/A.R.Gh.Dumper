@@ -9,7 +9,6 @@ on:
     branches:
       - main
   schedule:
-    # هر 15 دقیقه یک‌بار اجرا می‌شود
     - cron: "*/15 * * * *"
   workflow_dispatch:
 
@@ -23,6 +22,14 @@ jobs:
       with:
         fetch-depth: 0  
 
+    - name: List directory structure
+      run: |
+        pwd
+        ls -la
+        ls -la Files || echo "Files directory not found"
+        ls -la Files/app.py || echo "app.py not found"
+      continue-on-error: true
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -30,27 +37,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd Files
+        cd Files || exit 1
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install requests beautifulsoup4 jdatetime pytz
       continue-on-error: false
 
     - name: Run Python script
       run: |
-        cd Files
+        cd Files || exit 1
         python app.py
-      continue-on-error: false
-
-    - name: Run Splitter script
-      run: |
-        cd Files
-        python sort.py
-      continue-on-error: false
-
-    - name: Generate README
-      run: |
-        cd Files
-        python generate_readme.py
       continue-on-error: false
 
     - name: Commit and push changes
