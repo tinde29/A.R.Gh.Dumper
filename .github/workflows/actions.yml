@@ -1,0 +1,64 @@
+name: Update Configs
+
+permissions:
+  contents: write
+  actions: read
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # هر 15 دقیقه یک‌بار اجرا می‌شود
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd Files
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      continue-on-error: false
+
+    - name: Run Python script
+      run: |
+        cd Files
+        python app.py
+      continue-on-error: false
+
+    - name: Run Splitter script
+      run: |
+        cd Files
+        python sort.py
+      continue-on-error: false
+
+    - name: Generate README
+      run: |
+        cd Files
+        python generate_readme.py
+      continue-on-error: false
+
+    - name: Commit and push changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        author_name: "tahmaseb73"
+        author_email: "tahmaseb73@example.com"
+        message: "Update configs by tahmaseb73_ConfigScavenger"
+        add: "Files/*" 
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
